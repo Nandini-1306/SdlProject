@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download CSV</title>
+</head>
+<body>
+    <h1>Download CSV File</h1>
+    <form>
+        <label>Enter the PDF name (without ".pdf") to download the CSV:</label>
+        <input type="text" id="pdfName" placeholder="Enter PDF name"><br><br>
+        <button type="button" onclick="downloadCsv()">Download CSV</button>
+    </form>
+
+    <script>
+        function downloadCsv() {
+            const pdfName = document.getElementById("pdfName").value;
+            if (!pdfName) {
+                alert("Please enter a PDF name");
+                return;
+            }
+            const downloadUrl = `/download/${pdfName}`;
+            window.location.href = downloadUrl;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Attendance File</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+        }
+        label {
+            margin-bottom: 10px;
+        }
+        input[type="file"],
+        input[type="text"],
+        select {
+            margin-bottom: 20px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Attendance File</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="fileInput">Select File (PDF, Excel, or Image):</label>
+        <input type="file" id="fileInput" name="file" accept=".pdf, .xls, .xlsx, .jpg, .jpeg, .png" required>
+
+        <label for="subject">Enter Subject Name:</label>
+        <input type="text" id="subject" name="subject" required>
+
+        <label for="attendanceType">Select Attendance Type:</label>
+        <select id="attendanceType" name="attendance_type" required>
+            <option value="TH">Theory</option>
+            <option value="LAB">Lab</option>
+        </select>
+
+        <label>
+            <input type="checkbox" name="highlight_last_column" value="true" /> Highlight Last Column
+        </label>
+        
+        <input type="submit" value="Upload">
+    </form>
+    
+    <div id="responseMessage"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const subjectInput = document.getElementById('subject');
+            const attendanceTypeInput = document.getElementById('attendanceType');
+            const responseMessage = document.getElementById('responseMessage');
+
+            // Function to adjust the form based on the subject name
+            subjectInput.addEventListener('input', function() {
+                const subjectValue = subjectInput.value.trim().toLowerCase();
+                attendanceTypeInput.disabled = (subjectValue === 'total');
+            });
+
+            document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                const formData = new FormData(this);
+                const subjectValue = subjectInput.value.trim().toLowerCase();
+                responseMessage.textContent = ''; // Clear previous messages
+
+                // Add logic to highlight the last column if the subject is "total"
+                if (subjectValue === 'total') {
+                    formData.append('highlight_last_column', 'true');
+                }
+
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        responseMessage.innerHTML = `File uploaded successfully. Download the highlighted Excel <a href="${result.highlighted_excel}">here</a>.`;
+                        responseMessage.className = 'success';
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (error) {
+                    responseMessage.textContent = error.message;
+                    responseMessage.className = 'error';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
